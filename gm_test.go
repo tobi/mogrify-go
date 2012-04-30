@@ -1,6 +1,7 @@
 package mogrify
 
 import (
+  "log"
   "testing"
 )
 
@@ -18,7 +19,7 @@ func TestOpenNonExisting(t *testing.T) {
   }
 }
 
-func TestResizeGm(t *testing.T) {
+func TestResizeSuccess(t *testing.T) {
   img := Open("./assets/image.jpg")
 
   if img == nil {
@@ -28,7 +29,38 @@ func TestResizeGm(t *testing.T) {
 
   defer img.Destroy()
 
+  status := img.Resize(50, 50)
+  if status != nil {
+    log.Printf("resize failed %s", status)
+    t.Fail()
+  }
+}
+
+func TestResizeFailure(t *testing.T) {
+  img := Open("./assets/image.jpg")
+
+  if img == nil {
+    t.Fail()
+    return
+  }
+
+  defer img.Destroy()
+
+  status := img.Resize(0, 50)
+  if status == nil {
+    t.Fail()
+  }
+}
+
+func TestSaveTo(t *testing.T) {
+  img := Open("./assets/image.jpg")
+
+  if img == nil {
+    t.Fail()
+    return
+  }
+
+  defer img.Destroy()
   img.Resize(50, 50)
   img.SaveFile("/tmp/img.jpg")
-
 }

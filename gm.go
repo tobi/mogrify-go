@@ -7,11 +7,13 @@ import "C"
 
 import (
   "errors"
+  "fmt"
   "unsafe"
 )
 
 var (
-  CannotOpen = errors.New("Cannot open file")
+  CannotOpen   = errors.New("Cannot open file")
+  ResizeFailed = errors.New("Resize operation failed")
 )
 
 func Print(s string) {
@@ -25,8 +27,25 @@ type Image struct {
   filename string
 }
 
+type ImageError struct {
+  message  string
+  severity int
+}
+
+func (e *ImageError) Error() string {
+  return fmt.Sprintf("GraphicsMagick: %s severity: %d", e.message, e.severity)
+}
+
 func init() {
   C.InitializeMagick(nil)
+}
+
+func (img *Image) exception() error {
+  var ex C.ExceptionType
+
+  message := C.GoString(C.MagickGetException(img.wand, &ex))
+
+  return &ImageError{message, int(ex)}
 }
 
 func NewImage() *Image {
@@ -52,8 +71,13 @@ func (img *Image) OpenFile(filename string) error {
   return nil
 }
 
-func (img *Image) Resize(width, height uint64) {
-  C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
+func (img *Image) Resize(width, height uint64) error {
+  res := C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
+
+  if res != 1 {
+    return img.exception()
+  }
+  return nil
 }
 
 func (img *Image) SaveFile(filename string) bool {
