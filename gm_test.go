@@ -131,6 +131,4 @@ func TestSaveToBlob(t *testing.T) {
     t.Fail()
   }
 
-  log.Printf("%d", n)
-
 }

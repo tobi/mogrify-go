@@ -43,7 +43,7 @@ func Open(filename string) *Image {
   return nil
 }
 
-func (img *Image) exception() error {
+func (img *Image) error() error {
   var ex C.ExceptionType
 
   char_ptr := C.MagickGetException(img.wand, &ex)
@@ -64,7 +64,7 @@ func (img *Image) OpenFile(filename string) error {
 
   status := C.MagickReadImage(img.wand, cfilename)
   if status == C.MagickFalse {
-    return img.exception()
+    return img.error()
   }
   return nil
 }
@@ -77,7 +77,7 @@ func (img *Image) OpenBlob(bytes []byte) error {
   status := C.MagickReadImageBlob(img.wand, (*C.uchar)(&bytes[0]), C.size_t(len(bytes)))
 
   if status == C.MagickFalse {
-    return img.exception()
+    return img.error()
   }
   return nil
 }
@@ -87,7 +87,7 @@ func (img *Image) SaveBlob() ([]byte, error) {
   char_ptr := C.MagickWriteImageBlob(img.wand, &len)
 
   if char_ptr == nil {
-    return nil, img.exception()
+    return nil, img.error()
   }
 
   defer C.free(unsafe.Pointer(char_ptr))
@@ -99,7 +99,7 @@ func (img *Image) Write(writer io.Writer) (int, error) {
   bytes, err := img.SaveBlob()
 
   if err != nil {
-    return 0, img.exception()
+    return 0, img.error()
   }
 
   return writer.Write(bytes)
@@ -109,7 +109,7 @@ func (img *Image) Resize(width, height uint) error {
   res := C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
 
   if res == C.MagickFalse {
-    return img.exception()
+    return img.error()
   }
   return nil
 }
@@ -120,7 +120,7 @@ func (img *Image) SaveFile(filename string) error {
 
   status := C.MagickWriteImage(img.wand, cfilename)
   if status == C.MagickFalse {
-    return img.exception()
+    return img.error()
   }
   return nil
 }
