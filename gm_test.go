@@ -52,7 +52,7 @@ func TestResizeFailure(t *testing.T) {
   }
 }
 
-func TestSaveTo(t *testing.T) {
+func TestSaveToSuccess(t *testing.T) {
   img := Open("./assets/image.jpg")
 
   if img == nil {
@@ -61,6 +61,25 @@ func TestSaveTo(t *testing.T) {
   }
 
   defer img.Destroy()
-  img.Resize(50, 50)
-  img.SaveFile("/tmp/img.jpg")
+
+  res := img.SaveFile("/tmp/img.jpg")
+  if res != nil {
+    t.Fail()
+  }
+}
+
+func TestSaveToFailure(t *testing.T) {
+  img := Open("./assets/image.jpg")
+
+  if img == nil {
+    t.Fail()
+    return
+  }
+
+  defer img.Destroy()
+
+  res := img.SaveFile("/dgksjogdsksdgsdkgsd;lfsd-does-not-exist/img.jpg")
+  if res == nil {
+    t.Fail()
+  }
 }

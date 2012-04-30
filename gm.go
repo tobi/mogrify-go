@@ -74,18 +74,18 @@ func (img *Image) OpenFile(filename string) error {
 func (img *Image) Resize(width, height uint64) error {
   res := C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
 
-  if res != 1 {
+  if res == C.MagickFalse {
     return img.exception()
   }
   return nil
 }
 
-func (img *Image) SaveFile(filename string) bool {
+func (img *Image) SaveFile(filename string) error {
   status := C.MagickWriteImage(img.wand, C.CString(filename))
   if status == C.MagickFalse {
-    return false
+    return img.exception()
   }
-  return true
+  return nil
 }
 
 func (img *Image) Destroy() {
