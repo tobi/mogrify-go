@@ -82,17 +82,25 @@ func (img *Image) OpenBlob(bytes []byte) error {
   return nil
 }
 
-func (img *Image) Write(writer io.Writer) (int, error) {
+func (img *Image) SaveBlob() ([]byte, error) {
   var len C.size_t
   char_ptr := C.MagickWriteImageBlob(img.wand, &len)
 
   if char_ptr == nil {
-    return 0, img.exception()
+    return nil, img.exception()
   }
 
   defer C.free(unsafe.Pointer(char_ptr))
 
-  bytes := C.GoBytes(unsafe.Pointer(char_ptr), C.int(len))
+  return C.GoBytes(unsafe.Pointer(char_ptr), C.int(len)), nil
+}
+
+func (img *Image) Write(writer io.Writer) (int, error) {
+  bytes, err := img.SaveBlob()
+
+  if err != nil {
+    return 0, img.exception()
+  }
 
   return writer.Write(bytes)
 }
