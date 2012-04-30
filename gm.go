@@ -37,9 +37,10 @@ func init() {
 func (img *Image) exception() error {
   var ex C.ExceptionType
 
-  message := C.GoString(C.MagickGetException(img.wand, &ex))
+  char_ptr := C.MagickGetException(img.wand, &ex)
+  defer C.free(unsafe.Pointer(char_ptr))
 
-  return &ImageError{message, int(ex)}
+  return &ImageError{C.GoString(char_ptr), int(ex)}
 }
 
 func NewImage() *Image {
@@ -75,7 +76,10 @@ func (img *Image) Resize(width, height uint64) error {
 }
 
 func (img *Image) SaveFile(filename string) error {
-  status := C.MagickWriteImage(img.wand, C.CString(filename))
+  cfilename := C.CString(filename)
+  defer C.free(unsafe.Pointer(cfilename))
+
+  status := C.MagickWriteImage(img.wand, cfilename)
   if status == C.MagickFalse {
     return img.exception()
   }
