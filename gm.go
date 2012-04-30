@@ -16,12 +16,6 @@ var (
   ResizeFailed = errors.New("Resize operation failed")
 )
 
-func Print(s string) {
-  cs := C.CString(s)
-  C.fputs(cs, (*C.FILE)(C.stdout))
-  C.free(unsafe.Pointer(cs))
-}
-
 type Image struct {
   wand     *C.MagickWand
   filename string
