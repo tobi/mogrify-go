@@ -8,12 +8,12 @@ import "C"
 import (
   "errors"
   "fmt"
+  "io"
   "unsafe"
 )
 
 var (
-  CannotOpen   = errors.New("Cannot open file")
-  ResizeFailed = errors.New("Resize operation failed")
+  BlobEmpty = errors.New("blob was empty")
 )
 
 type Image struct {
@@ -26,12 +26,21 @@ type ImageError struct {
   severity int
 }
 
+func init() {
+  C.InitializeMagick(nil)
+}
+
 func (e *ImageError) Error() string {
   return fmt.Sprintf("GraphicsMagick: %s severity: %d", e.message, e.severity)
 }
 
-func init() {
-  C.InitializeMagick(nil)
+func Open(filename string) *Image {
+  image := NewImage()
+
+  if image.OpenFile(filename) == nil {
+    return image
+  }
+  return nil
 }
 
 func (img *Image) exception() error {
@@ -49,24 +58,46 @@ func NewImage() *Image {
   return image
 }
 
-func Open(filename string) *Image {
-  image := NewImage()
-
-  if image.OpenFile(filename) == nil {
-    return image
-  }
-  return nil
-}
-
 func (img *Image) OpenFile(filename string) error {
-  status := C.MagickReadImage(img.wand, C.CString(filename))
+  cfilename := C.CString(filename)
+  defer C.free(unsafe.Pointer(cfilename))
+
+  status := C.MagickReadImage(img.wand, cfilename)
   if status == C.MagickFalse {
-    return CannotOpen
+    return img.exception()
   }
   return nil
 }
 
-func (img *Image) Resize(width, height uint64) error {
+func (img *Image) OpenBlob(bytes []byte) error {
+  if len(bytes) < 1 {
+    return BlobEmpty
+  }
+
+  status := C.MagickReadImageBlob(img.wand, (*C.uchar)(&bytes[0]), C.size_t(len(bytes)))
+
+  if status == C.MagickFalse {
+    return img.exception()
+  }
+  return nil
+}
+
+func (img *Image) Write(writer io.Writer) (int, error) {
+  var len C.size_t
+  char_ptr := C.MagickWriteImageBlob(img.wand, &len)
+
+  if char_ptr == nil {
+    return 0, img.exception()
+  }
+
+  defer C.free(unsafe.Pointer(char_ptr))
+
+  bytes := C.GoBytes(unsafe.Pointer(char_ptr), C.int(len))
+
+  return writer.Write(bytes)
+}
+
+func (img *Image) Resize(width, height uint) error {
   res := C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
 
   if res == C.MagickFalse {

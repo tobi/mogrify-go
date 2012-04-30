@@ -1,7 +1,9 @@
 package mogrify
 
 import (
+  "io/ioutil"
   "log"
+  "os"
   "testing"
 )
 
@@ -82,4 +84,53 @@ func TestSaveToFailure(t *testing.T) {
   if res == nil {
     t.Fail()
   }
+}
+
+func TestOpenBlopSuccess(t *testing.T) {
+  bytes, _ := ioutil.ReadFile("./assets/image.jpg")
+
+  img := NewImage()
+  res := img.OpenBlob(bytes)
+
+  if res != nil {
+    t.Fail()
+  }
+
+  img.Destroy()
+}
+
+func TestOpenBlopFailure(t *testing.T) {
+
+  img := NewImage()
+  res := img.OpenBlob([]byte{'a'})
+
+  if res == nil {
+    t.Fail()
+  }
+
+  res = img.OpenBlob([]byte{})
+
+  if res == nil {
+    t.Fail()
+  }
+}
+
+func TestSaveToBlob(t *testing.T) {
+  img := Open("./assets/image.jpg")
+
+  fp, err := os.Create("/tmp/img3.jpg")
+  if err != nil {
+    t.Fail()
+  }
+
+  defer fp.Close()
+
+  n, err := img.Write(fp)
+
+  if err != nil {
+    t.Fail()
+  }
+
+  log.Printf("%d", n)
+
 }
