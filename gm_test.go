@@ -21,6 +21,23 @@ func TestOpenNonExisting(t *testing.T) {
   }
 }
 
+func TestHeightWidth(t *testing.T) {
+  img := Open("./assets/image.jpg")
+  if img == nil {
+    t.Fail()
+  }
+  if img.Width() != 600 {
+    log.Printf("%d", img.Width())
+    t.Fail()
+  }
+
+  if img.Height() != 399 {
+    log.Printf("%d", img.Height())
+    t.Fail()
+  }
+
+}
+
 func TestResizeSuccess(t *testing.T) {
   img := Open("./assets/image.jpg")
 
