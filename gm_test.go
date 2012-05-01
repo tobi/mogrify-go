@@ -53,6 +53,11 @@ func TestResizeSuccess(t *testing.T) {
     log.Printf("resize failed %s", status)
     t.Fail()
   }
+
+  if img.Width() != 50 || img.Height() != 50 {
+    log.Printf("size was %dx%d", img.Width(), img.Height())
+    t.Fail()
+  }
 }
 
 func TestResizeFailure(t *testing.T) {
