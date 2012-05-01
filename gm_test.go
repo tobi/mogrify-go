@@ -163,6 +163,9 @@ func TestTransformation(t *testing.T) {
   defer img.Destroy()
   defer img2.Destroy()
 
-  img2.SaveFile("/tmp/img5.jpg")
+  if img2.Dimensions() != "75x50" {
+    t.Fail()
+  }
 
+  //img2.SaveFile("/tmp/img4.jpg")
 }

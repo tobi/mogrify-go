@@ -76,6 +76,10 @@ func (img *Image) Height() int64 {
   return int64(C.MagickGetImageHeight(img.wand))
 }
 
+func (img *Image) Dimensions() string {
+  return fmt.Sprintf("%dx%d", img.Width(), img.Height())
+}
+
 func (img *Image) OpenBlob(bytes []byte) error {
   if len(bytes) < 1 {
     return BlobEmpty
