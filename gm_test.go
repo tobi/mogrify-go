@@ -125,6 +125,7 @@ func TestOpenBlopFailure(t *testing.T) {
 
   img := NewImage()
   res := img.OpenBlob([]byte{'a'})
+  defer img.Destroy()
 
   if res == nil {
     t.Fail()
@@ -139,6 +140,7 @@ func TestOpenBlopFailure(t *testing.T) {
 
 func TestSaveToBlob(t *testing.T) {
   img := Open("./assets/image.jpg")
+  defer img.Destroy()
 
   fp, err := os.Create("/tmp/img3.jpg")
   if err != nil {
@@ -152,5 +154,15 @@ func TestSaveToBlob(t *testing.T) {
   if err != nil {
     t.Fail()
   }
+
+}
+
+func TestTransformation(t *testing.T) {
+  img := Open("./assets/image.jpg")
+  img2 := img.NewTransformation("", "100x50>")
+  defer img.Destroy()
+  defer img2.Destroy()
+
+  img2.SaveFile("/tmp/img5.jpg")
 
 }

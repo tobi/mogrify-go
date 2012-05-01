@@ -17,8 +17,7 @@ var (
 )
 
 type Image struct {
-  wand     *C.MagickWand
-  filename string
+  wand *C.MagickWand
 }
 
 type ImageError struct {
@@ -120,6 +119,18 @@ func (img *Image) Resize(width, height uint) error {
     return img.error()
   }
   return nil
+}
+
+func (img *Image) NewTransformation(crop, geometry string) *Image {
+  ccrop := C.CString(crop)
+  defer C.free(unsafe.Pointer(ccrop))
+
+  cgeometry := C.CString(geometry)
+  defer C.free(unsafe.Pointer(cgeometry))
+
+  wand := C.MagickTransformImage(img.wand, ccrop, cgeometry)
+
+  return &Image{(*C.MagickWand)(wand)}
 }
 
 func (img *Image) SaveFile(filename string) error {
