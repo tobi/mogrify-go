@@ -125,7 +125,7 @@ func TestSaveToBlob(t *testing.T) {
 
   defer fp.Close()
 
-  n, err := img.Write(fp)
+  _, err = img.Write(fp)
 
   if err != nil {
     t.Fail()

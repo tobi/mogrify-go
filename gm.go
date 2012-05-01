@@ -47,7 +47,7 @@ func (img *Image) error() error {
   var ex C.ExceptionType
 
   char_ptr := C.MagickGetException(img.wand, &ex)
-  defer C.free(unsafe.Pointer(char_ptr))
+  defer C.MagickRelinquishMemory(unsafe.Pointer(char_ptr))
 
   return &ImageError{C.GoString(char_ptr), int(ex)}
 }
@@ -90,7 +90,7 @@ func (img *Image) SaveBlob() ([]byte, error) {
     return nil, img.error()
   }
 
-  defer C.free(unsafe.Pointer(char_ptr))
+  defer C.MagickRelinquishMemory(unsafe.Pointer(char_ptr))
 
   return C.GoBytes(unsafe.Pointer(char_ptr), C.int(len)), nil
 }
