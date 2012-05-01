@@ -160,10 +160,20 @@ func TestSaveToBlob(t *testing.T) {
 func TestTransformation(t *testing.T) {
   img := Open("./assets/image.jpg")
   img2 := img.NewTransformation("", "100x50>")
+
   defer img.Destroy()
   defer img2.Destroy()
 
   if img2.Dimensions() != "75x50" {
+    log.Print(img2.Dimensions())
+    t.Fail()
+  }
+
+  img3 := img.NewTransformation("", "100x50!")
+  defer img3.Destroy()
+
+  if img3.Dimensions() != "100x50" {
+    log.Print(img3.Dimensions())
     t.Fail()
   }
 
