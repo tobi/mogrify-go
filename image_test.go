@@ -7,6 +7,17 @@ import (
   "testing"
 )
 
+func init() {
+  Init()
+}
+
+
+func assertDimension(t *testing.T, img *Image, expected string) {
+  if actual := img.Dimensions(); actual != expected {
+    t.Fatalf("Got wrong dimensions expected:%s got %s", expected, actual)
+  }
+}
+
 func TestOpenExisting(t *testing.T) {
   img := Open("./assets/image.jpg")
   if img == nil {
@@ -26,16 +37,15 @@ func TestHeightWidth(t *testing.T) {
   if img == nil {
     t.Fail()
   }
+
   if img.Width() != 600 {
-    log.Printf("%d", img.Width())
-    t.Fail()
+    
+    t.Fatalf("%d", img.Width())
   }
 
   if img.Height() != 399 {
-    log.Printf("%d", img.Height())
-    t.Fail()
+    t.Fatalf("%d", img.Height())
   }
-
 }
 
 func TestResizeSuccess(t *testing.T) {
@@ -113,12 +123,29 @@ func TestOpenBlopSuccess(t *testing.T) {
 
   img := NewImage()
   res := img.OpenBlob(bytes)
+  defer img.Destroy()
 
   if res != nil {
-    t.Fail()
+    t.FailNow()
   }
 
-  img.Destroy()
+  assertDimension(t, img, "600x399")
+}
+
+func TestOpenBlopSuccessPng(t *testing.T) {
+  bytes, _ := ioutil.ReadFile("./assets/example.com.png")
+
+  img := NewImage()
+  res := img.OpenBlob(bytes)
+  defer img.Destroy()
+
+  if res != nil {
+    t.FailNow()
+  }
+
+  if dim := img.Dimensions(); dim != "1280x500" {
+    t.Fatalf("Got wrong dimensions expected:1280x500 got %s", dim)
+  }
 }
 
 func TestOpenBlopFailure(t *testing.T) {
@@ -159,23 +186,28 @@ func TestSaveToBlob(t *testing.T) {
 
 func TestTransformation(t *testing.T) {
   img := Open("./assets/image.jpg")
-  img2 := img.NewTransformation("", "100x50>")
-
   defer img.Destroy()
+
+  img2, err := img.NewTransformation("", "100x50>")
+
+  if err != nil {
+    t.FailNow()
+    return  
+  }
+  
   defer img2.Destroy()
 
-  if img2.Dimensions() != "75x50" {
-    log.Print(img2.Dimensions())
-    t.Fail()
-  }
+  assertDimension(t, img2, "75x50")
 
-  img3 := img.NewTransformation("", "100x50!")
+  img3, err := img.NewTransformation("", "100x50!")
   defer img3.Destroy()
 
-  if img3.Dimensions() != "100x50" {
-    log.Print(img3.Dimensions())
-    t.Fail()
+  if err != nil {
+    t.FailNow()
+    return  
   }
+
+  assertDimension(t, img3, "100x50")
 
   //img2.SaveFile("/tmp/img4.jpg")
 }

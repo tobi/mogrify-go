@@ -1,7 +1,7 @@
 package mogrify
 
 // #cgo CFLAGS: -I/usr/local/include/GraphicsMagick
-// #cgo LDFLAGS: -lGraphicsMagickWand -lGraphicsMagick
+// #cgo LDFLAGS: -fopenmp -lGraphicsMagickWand -lGraphicsMagick
 // #include <wand/magick_wand.h>
 import "C"
 
@@ -10,7 +10,10 @@ import (
   "fmt"
   "io"
   "unsafe"
+  "sync"
 )
+
+var once sync.Once
 
 var (
   BlobEmpty = errors.New("blob was empty")
@@ -25,7 +28,7 @@ type ImageError struct {
   severity int
 }
 
-func init() {
+func Init() {
   C.InitializeMagick(nil)
 }
 
@@ -51,9 +54,14 @@ func (img *Image) error() error {
   return &ImageError{C.GoString(char_ptr), int(ex)}
 }
 
-func NewImage() *Image {
+func NewImage() *Image {  
   image := new(Image)
   image.wand = C.NewMagickWand()
+
+  if image.wand == nil {
+    panic(image.error())
+  }
+
   return image
 }
 
@@ -85,7 +93,7 @@ func (img *Image) OpenBlob(bytes []byte) error {
     return BlobEmpty
   }
 
-  status := C.MagickReadImageBlob(img.wand, (*C.uchar)(&bytes[0]), C.size_t(len(bytes)))
+  status := C.MagickReadImageBlob(img.wand, (*C.uchar)(unsafe.Pointer(&bytes[0])), C.size_t(len(bytes)))
 
   if status == C.MagickFalse {
     return img.error()
@@ -125,7 +133,7 @@ func (img *Image) Resize(width, height uint) error {
   return nil
 }
 
-func (img *Image) NewTransformation(crop, geometry string) *Image {
+func (img *Image) NewTransformation(crop, geometry string) (*Image, error) {
   ccrop := C.CString(crop)
   defer C.free(unsafe.Pointer(ccrop))
 
@@ -134,7 +142,11 @@ func (img *Image) NewTransformation(crop, geometry string) *Image {
 
   wand := C.MagickTransformImage(img.wand, ccrop, cgeometry)
 
-  return &Image{(*C.MagickWand)(wand)}
+  if wand == nil {
+    return nil, img.error()
+  }
+
+  return &Image{(*C.MagickWand)(wand)}, nil
 }
 
 func (img *Image) SaveFile(filename string) error {
