@@ -1,7 +1,7 @@
 package mogrify
 
-// #cgo CFLAGS: -I/usr/local/include/GraphicsMagick
-// #cgo LDFLAGS: -fopenmp -lGraphicsMagickWand -lGraphicsMagick
+// #cgo CFLAGS: -fopenmp -I/usr/local/include/ImageMagick -I/usr/include/ImageMagick
+// #cgo LDFLAGS: -lMagickWand -lMagickCore
 // #include <wand/magick_wand.h>
 import "C"
 
@@ -26,10 +26,6 @@ type Image struct {
 type ImageError struct {
   message  string
   severity int
-}
-
-func Init() {
-  C.InitializeMagick(nil)
 }
 
 func (e *ImageError) Error() string {
@@ -93,7 +89,7 @@ func (img *Image) OpenBlob(bytes []byte) error {
     return BlobEmpty
   }
 
-  status := C.MagickReadImageBlob(img.wand, (*C.uchar)(unsafe.Pointer(&bytes[0])), C.size_t(len(bytes)))
+  status := C.MagickReadImageBlob(img.wand, unsafe.Pointer(&bytes[0]), C.size_t(len(bytes)))
 
   if status == C.MagickFalse {
     return img.error()
@@ -101,9 +97,9 @@ func (img *Image) OpenBlob(bytes []byte) error {
   return nil
 }
 
-func (img *Image) SaveBlob() ([]byte, error) {
+func (img *Image) Blob() ([]byte, error) {
   var len C.size_t
-  char_ptr := C.MagickWriteImageBlob(img.wand, &len)
+  char_ptr := C.MagickGetImageBlob(img.wand, &len)
 
   if char_ptr == nil {
     return nil, img.error()
@@ -115,7 +111,7 @@ func (img *Image) SaveBlob() ([]byte, error) {
 }
 
 func (img *Image) Write(writer io.Writer) (int, error) {
-  bytes, err := img.SaveBlob()
+  bytes, err := img.Blob()
 
   if err != nil {
     return 0, img.error()
@@ -125,7 +121,7 @@ func (img *Image) Write(writer io.Writer) (int, error) {
 }
 
 func (img *Image) Resize(width, height uint) error {
-  res := C.MagickResizeImage(img.wand, C.ulong(width), C.ulong(height), C.GaussianFilter, 1)
+  res := C.MagickResizeImage(img.wand, C.size_t(width), C.size_t(height), C.GaussianFilter, 1)
 
   if res == C.MagickFalse {
     return img.error()

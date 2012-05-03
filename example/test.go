@@ -1,36 +1,30 @@
 package main
 
 import (
-  "io/ioutil"
+  "fmt"
 	"github.com/tobi/mogrify-go"
 )
 
-// func Server(w http.ResponseWriter, r *http.Request) {
-// }
-
-func init() {
-  mogrify.Init()
-}
-
 func main() {
+
+  img := mogrify.NewImage()
+  defer img.Destroy()
   
-
-	img := mogrify.NewImage()
-	defer img.Destroy()
-	bytes, _ := ioutil.ReadFile("image.png")
-
-  defer print("\n")
-
-	err := img.OpenBlob(bytes)
-
-  if err != nil {
-    print("error ")
-    print(err.Error())
-    return
+  if err := img.OpenFile("../assets/example.com.png"); err != nil {
+    panic(err.Error())
   }
 
-  print(img.Dimensions())
+  fmt.Printf("Image dimensions: %s\n", img.Dimensions())
+  
+  resized, err := img.NewTransformation("", "100x75>")
+  
+  if err != nil {
+    panic(err.Error())
+  }
+  defer resized.Destroy()
 
-  
-  
+  fmt.Printf("Resized image dimensions: %s\n", resized.Dimensions())
+
+  resized.SaveFile("/tmp/image.png")
+
 }

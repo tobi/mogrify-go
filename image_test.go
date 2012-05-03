@@ -7,10 +7,6 @@ import (
   "testing"
 )
 
-func init() {
-  Init()
-}
-
 
 func assertDimension(t *testing.T, img *Image, expected string) {
   if actual := img.Dimensions(); actual != expected {
