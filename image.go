@@ -1,8 +1,10 @@
 package mogrify
 
-// #cgo CFLAGS: -fopenmp -I/usr/local/include/ImageMagick -I/usr/include/ImageMagick
-// #cgo LDFLAGS: -lMagickWand -lMagickCore
-// #include <wand/magick_wand.h>
+/*
+#cgo CFLAGS: -fopenmp -I/usr/local/include/ImageMagick -I/usr/include/ImageMagick
+#cgo LDFLAGS: -lMagickWand -lMagickCore
+#include <wand/magick_wand.h>
+*/
 import "C"
 
 import (

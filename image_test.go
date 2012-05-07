@@ -1,6 +1,7 @@
 package mogrify
 
 import (
+  "runtime"
   "io/ioutil"
   "log"
   "os"
@@ -206,4 +207,24 @@ func TestTransformation(t *testing.T) {
   assertDimension(t, img3, "100x50")
 
   //img2.SaveFile("/tmp/img4.jpg")
+}
+
+func BenchmarkAndMemoryTest(b *testing.B) {
+  var before runtime.MemStats
+  var after runtime.MemStats
+
+  runtime.ReadMemStats(&before)
+
+  work := func() {
+    img := Open("./assets/image.jpg")
+    img.Destroy()
+  }
+
+  for i := 0; i < 100; i++ {
+    work()
+  }
+
+  runtime.ReadMemStats(&after)
+
+  log.Printf("sys memory before: %d after %d - diff: %d", before.HeapSys, after.HeapSys, after.HeapSys - before.HeapSys)
 }
