@@ -1,13 +1,12 @@
 package mogrify
 
 import (
-  "runtime"
   "io/ioutil"
   "log"
   "os"
+  "runtime"
   "testing"
 )
-
 
 func assertDimension(t *testing.T, img *Image, expected string) {
   if actual := img.Dimensions(); actual != expected {
@@ -36,7 +35,7 @@ func TestHeightWidth(t *testing.T) {
   }
 
   if img.Width() != 600 {
-    
+
     t.Fatalf("%d", img.Width())
   }
 
@@ -189,9 +188,9 @@ func TestTransformation(t *testing.T) {
 
   if err != nil {
     t.FailNow()
-    return  
+    return
   }
-  
+
   defer img2.Destroy()
 
   assertDimension(t, img2, "75x50")
@@ -201,12 +200,19 @@ func TestTransformation(t *testing.T) {
 
   if err != nil {
     t.FailNow()
-    return  
+    return
   }
 
   assertDimension(t, img3, "100x50")
 
   //img2.SaveFile("/tmp/img4.jpg")
+}
+
+func TestReadFrom(t *testing.T) {
+  file, _ := os.Open("./assets/image.jpg")
+  image := NewImage()
+  image.ReadFrom(file)
+  assertDimension(t, image, "100x50")
 }
 
 func BenchmarkAndMemoryTest(b *testing.B) {
@@ -226,5 +232,5 @@ func BenchmarkAndMemoryTest(b *testing.B) {
 
   runtime.ReadMemStats(&after)
 
-  log.Printf("sys memory before: %d after %d - diff: %d", before.HeapSys, after.HeapSys, after.HeapSys - before.HeapSys)
+  log.Printf("sys memory before: %d after %d - diff: %d", before.HeapSys, after.HeapSys, after.HeapSys-before.HeapSys)
 }

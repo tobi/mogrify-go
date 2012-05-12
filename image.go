@@ -2,17 +2,18 @@ package mogrify
 
 /*
 #cgo CFLAGS: -fopenmp -I/usr/local/include/ImageMagick -I/usr/include/ImageMagick
-#cgo LDFLAGS: -lMagickWand -lMagickCore
+#cgo LDFLAGS: -lMagickCore -lMagickWand 
 #include <wand/magick_wand.h>
 */
 import "C"
 
 import (
+  "bytes"
   "errors"
   "fmt"
   "io"
-  "unsafe"
   "sync"
+  "unsafe"
 )
 
 var once sync.Once
@@ -52,7 +53,7 @@ func (img *Image) error() error {
   return &ImageError{C.GoString(char_ptr), int(ex)}
 }
 
-func NewImage() *Image {  
+func NewImage() *Image {
   image := new(Image)
   image.wand = C.NewMagickWand()
 
@@ -68,10 +69,32 @@ func (img *Image) OpenFile(filename string) error {
   defer C.free(unsafe.Pointer(cfilename))
 
   status := C.MagickReadImage(img.wand, cfilename)
+
   if status == C.MagickFalse {
     return img.error()
   }
   return nil
+}
+
+func (img *Image) ReadFrom(reader io.Reader) (n int64, err error) {
+  buffer := bytes.NewBuffer(nil)
+
+  n, err = buffer.ReadFrom(reader)
+
+  if err != nil {
+    return
+  }
+
+  return n, img.OpenBlob(buffer.Bytes())
+}
+
+func (img *Image) WriteTo(writer io.Writer) (n int64, err error) {
+  buffer, err := img.Blob()
+  if err != nil {
+    return 0, err
+  }
+
+  return bytes.NewBuffer(buffer).WriteTo(writer)
 }
 
 func (img *Image) Width() int64 {
