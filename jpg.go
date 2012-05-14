@@ -61,7 +61,15 @@ func (img *Jpg) ReadFrom(reader io.Reader) (n int64, err error) {
 }
 
 func (img *Jpg) WriteTo(writer io.Writer) (n int64, err error) {
-	return 0, nil
+
+	slice, err := img.gd.gdImageJpeg() 
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = writer.Write(slice) 
+
+	return 0, err
 }
 
 func (img *Jpg) Width() int {

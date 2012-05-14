@@ -13,6 +13,7 @@ import (
 
 var (
 	imageError = errors.New("image is nil")
+	writeError = errors.New("image cannot be accessed")
 )
 
 type gdImage struct {
@@ -32,7 +33,7 @@ func img(img *C.gdImage) *gdImage {
 }
 
 func gdCreate(sx, sy int) *gdImage {
-	return img(C.gdImageCreate(C.int(sx), C.int(sy)))
+	return img(C.gdImageCreateTrueColor(C.int(sx), C.int(sy)))
 }
 
 func gdCreateFromJpeg(buffer []byte) *gdImage {
@@ -86,4 +87,31 @@ func (p *gdImage) gdCopyResized(dst *gdImage, dstX, dstY, srcX, srcY, dstW, dstH
 	}
 	C.gdImageCopyResized(dst.img, p.img, C.int(dstX), C.int(dstY), C.int(srcX), C.int(srcY),
 		C.int(dstW), C.int(dstH), C.int(srcW), C.int(srcH))
+}
+
+// func (p *gdImage) gdImagePng() ([]byte, error) {
+// 	var size int
+
+// 	data := C.gdImagePngPtr(p.img, &size)
+// 	if data == nil {
+// 		return []byte{}, writeError
+// 	}
+
+// 	defer C.gdFree(unsafe.Pointer(data))	
+
+// 	return C.GoBytes(data)
+// }
+
+func (p *gdImage) gdImageJpeg() ([]byte, error) {
+	var size C.int
+
+	// use -1 as quality, this will mean to use standard Jpeg quality
+	data := C.gdImageJpegPtr(p.img, &size, -1)
+	if data == nil || int(size) == 0 {
+		return []byte{}, writeError
+	}
+	
+	defer C.gdFree(unsafe.Pointer(data))	
+
+	return C.GoBytes(data, size), nil
 }

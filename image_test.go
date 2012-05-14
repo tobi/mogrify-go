@@ -87,6 +87,18 @@ func TestResampleFailure(t *testing.T) {
 	}
 }
 
+func TestSave(t *testing.T) {
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
+
+	resized, _ := img.NewResampled(100, 100)
+
+	dest, _ := os.Create("/tmp/dest.jpg")
+	defer dest.Close()
+	resized.WriteTo(dest)
+
+}
+
 // func TestSaveToSuccess(t *testing.T) {
 //   img := Open("./assets/image.jpg")
 
