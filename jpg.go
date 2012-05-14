@@ -3,7 +3,6 @@ package mogrify
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -12,8 +11,7 @@ var (
 )
 
 var (
-	jpgLoadError  = errors.New("Jpeg cannot be loaded")
-	resampleError = errors.New("Resampling failed")
+	
 )
 
 type Jpg struct {
@@ -23,7 +21,6 @@ type Jpg struct {
 func NewJpg(reader io.Reader) *Jpg {
 	var image Jpg
 	if _, err := image.ReadFrom(reader); err != nil {
-		fmt.Printf("%s", err)
 		return nil
 	}
 	return &image
@@ -41,31 +38,28 @@ func NewBlankJpg(width, height int) *Jpg {
 
 func (img *Jpg) ReadFrom(reader io.Reader) (n int64, err error) {
 	var buffer bytes.Buffer
-	n, err = buffer.ReadFrom(reader)
 
+	n, err = buffer.ReadFrom(reader)
 	if err != nil {
 		return
 	}
 
 	gd := gdCreateFromJpeg(buffer.Bytes())
 	if gd == nil {
-		return n, jpgLoadError
+		return n, loadError
 	}
 
-	if img.gd != nil {
-		img.Destroy()
-	}
-
+	img.Destroy()
 	img.gd = gd
 	return
 }
 
 func (img *Jpg) WriteTo(writer io.Writer) (n int64, err error) {
-
 	slice, err := img.gd.gdImageJpeg() 
 	if err != nil {
 		return 0, err
 	}
+
 
 	_, err = writer.Write(slice) 
 
@@ -81,25 +75,21 @@ func (img *Jpg) Height() int {
 }
 
 func (img *Jpg) NewResized(width, height int) (*Jpg, error) {
-	resized := NewBlankJpg(width, height)
-	img.gd.gdCopyResized(resized.gd, 0, 0, 0, 0, width, height, img.Width(), img.Height())
-
-	return resized, nil
-}
-
-func (img *Jpg) NewResampled(width, height int) (*Jpg, error) {
-	resized := NewBlankJpg(width, height)
+	resized := img.gd.gdCopyResized(0, 0, 0, 0, width, height, img.gd.width(), img.gd.height())
 	if resized == nil {
 		return nil, resampleError
 	}
 
-	img.gd.gdCopyResampled(resized.gd, 0, 0, 0, 0, width, height, img.gd.width(), img.gd.height())
+	return &Jpg{resized}, nil
+}
 
-	if isInvalid(resized.gd) {
+func (img *Jpg) NewResampled(width, height int) (*Jpg, error) {
+	resized := img.gd.gdCopyResampled(0, 0, 0, 0, width, height, img.gd.width(), img.gd.height())
+	if resized == nil {
 		return nil, resampleError
 	}
 
-	return resized, nil
+	return &Jpg{resized}, nil
 }
 
 func (img *Jpg) Destroy() {
