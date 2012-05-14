@@ -13,28 +13,32 @@ var (
 
 type Format int
 
-const (
-  PNG Format = iota
-  GIF
-  JPG
-)
-
 var (
   JpgLoadError  = errors.New("Jpeg cannot be loaded")
   resampleError = errors.New("Resampling failed")
 )
 
-type Image struct {
-  format Format
-  gd     *gdImage
-  //  ReadFrom func(r Reader) (n int64, err error)
+type Image interface {
+  Width() int
+  Height() int  
 }
 
-func NewImage(format Format) *Image {
-  return &Image{}
+func Dimensions(img Image) string {
+  return fmt.Sprintf("%dx%d", img.Width(), img.Height())
 }
 
-func (img *Image) ReadFromJpeg(reader io.Reader) (n int64, err error) {
+
+type Jpg struct {  
+  gd     *gdImage  
+}
+
+func NewJpg(reader io.Reader) *Jpg {
+  var image Jpg
+  image.ReadFrom(reader)
+  return &image
+}
+
+func (img *Jpg) ReadFrom(reader io.Reader) (n int64, err error) {
   var buffer bytes.Buffer
   n, err = buffer.ReadFrom(reader)
 
@@ -46,37 +50,35 @@ func (img *Image) ReadFromJpeg(reader io.Reader) (n int64, err error) {
   if gd == nil {
     return n, JpgLoadError
   }
-  img.Destroy()
-  img.format = JPG
+  
+  if img.gd != nil {
+    img.Destroy()
+  }
+  
   img.gd = gd
-
   return
 }
 
-func (img *Image) WriteTo(writer io.Writer) (n int64, err error) {
+func (img *Jpg) WriteTo(writer io.Writer) (n int64, err error) {
   return 0, nil
 }
 
-func (img *Image) Width() int {
+func (img *Jpg) Width() int {
   return img.gd.width()
 }
 
-func (img *Image) Height() int {
+func (img *Jpg) Height() int {
   return img.gd.height()
 }
 
-func (img *Image) Dimensions() string {
-  return fmt.Sprintf("%dx%d", img.Width(), img.Height())
-}
-
-func (img *Image) CopyResized(width, height int) (*Image, error) {
+func (img *Jpg) NewResized(width, height int) (*Jpg, error) {
   dst := gdCreate(width, height)
   img.gd.gdCopyResized(dst, 0, 0, 0, 0, width, height, img.gd.width(), img.gd.height())
 
-  return &Image{img.format, dst}, nil
+  return &Jpg{dst}, nil
 }
 
-func (img *Image) CopyResampled(width, height int) (*Image, error) {
+func (img *Jpg) NewResampled(width, height int) (*Jpg, error) {
   dst := gdCreate(width, height)
   img.gd.gdCopyResampled(dst, 0, 0, 0, 0, width, height, img.gd.width(), img.gd.height())
 
@@ -84,9 +86,9 @@ func (img *Image) CopyResampled(width, height int) (*Image, error) {
     return nil, resampleError
   }
 
-  return &Image{img.format, dst}, nil
+  return &Jpg{dst}, nil
 }
 
-func (img *Image) Destroy() {
+func (img *Jpg) Destroy() {
   img.gd.gdDestroy()
 }

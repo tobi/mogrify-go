@@ -22,7 +22,7 @@ func img(img *C.gdImage) *gdImage {
 }
 
 func assertGd(img *C.gdImage) bool {
-	return (*img).pixels != nil
+	return (*img).pixels != nil	
 }
 
 func gdCreate(sx, sy int) *gdImage {

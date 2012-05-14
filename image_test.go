@@ -2,22 +2,20 @@ package mogrify
 
 import (
   "os"
-
   "testing"
 )
 
-func assertDimension(t *testing.T, img *Image, expected string) {
-  if actual := img.Dimensions(); actual != expected {
+func assertDimension(t *testing.T, img Image, expected string) {
+  if actual := Dimensions(img); actual != expected {
     t.Errorf("Got wrong dimensions expected:%s got %s", expected, actual)
   }
 }
 
-func asset(asset string) *Image {
+func asset(asset string) *Jpg {
   file, _ := os.Open("./assets/image.jpg")
   defer file.Close()
 
-  image := NewImage(JPG)
-  image.ReadFromJpeg(file)
+  image := NewJpg(file)  
   return image
 }
 
@@ -25,10 +23,8 @@ func TestOpenExisting(t *testing.T) {
   file, _ := os.Open("./assets/image.jpg")
   defer file.Close()
 
-  image := NewImage(JPG)
-  defer image.Destroy()
-
-  image.ReadFromJpeg(file)
+  image := NewJpg(file)
+  defer image.Destroy()  
 
   assertDimension(t, image, "600x399")
 }
@@ -51,7 +47,7 @@ func TestResizeSuccess(t *testing.T) {
   img := asset("./assets/image.jpg")
   defer img.Destroy()
 
-  resized, err := img.CopyResized(50, 50)
+  resized, err := img.NewResized(50, 50)
   if err != nil {
     t.Error(err)
   }
@@ -64,7 +60,7 @@ func TestResampleSuccess(t *testing.T) {
   img := asset("./assets/image.jpg")
   defer img.Destroy()
 
-  resized, err := img.CopyResampled(50, 50)
+  resized, err := img.NewResampled(50, 50)
   if err != nil {
     t.Error(err)
   }
@@ -77,7 +73,7 @@ func TestResampleFailure(t *testing.T) {
   img := asset("./assets/image.jpg")
   defer img.Destroy()
 
-  resized, err := img.CopyResampled(0, 50)
+  resized, err := img.NewResampled(0, 50)
   if err == nil {
     t.Fatalf("This should have failed...")
   }
