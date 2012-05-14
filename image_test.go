@@ -1,84 +1,90 @@
 package mogrify
 
 import (
-  "os"
-  "testing"
+	"os"
+	"testing"
 )
 
 func assertDimension(t *testing.T, img Image, expected string) {
-  if actual := Dimensions(img); actual != expected {
-    t.Errorf("Got wrong dimensions expected:%s got %s", expected, actual)
-  }
+	if actual := Dimensions(img); actual != expected {
+		t.Errorf("Got wrong dimensions expected:%s got %s", expected, actual)
+	}
 }
 
 func asset(asset string) *Jpg {
-  file, _ := os.Open("./assets/image.jpg")
-  defer file.Close()
+	file, _ := os.Open("./assets/image.jpg")
+	defer file.Close()
 
-  image := NewJpg(file)  
-  return image
+	image := NewJpg(file)
+
+	if image == nil {
+		panic("Image didnt load")
+	}
+
+	return image
 }
 
 func TestOpenExisting(t *testing.T) {
-  file, _ := os.Open("./assets/image.jpg")
-  defer file.Close()
+	image := asset("./assets/image.jpg")
+	defer image.Destroy()
 
-  image := NewJpg(file)
-  defer image.Destroy()  
-
-  assertDimension(t, image, "600x399")
+	assertDimension(t, image, "600x399")
 }
 
 func TestHeightWidth(t *testing.T) {
-  img := asset("./assets/image.jpg")
-  defer img.Destroy()
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
 
-  if img.Width() != 600 {
+	if img.Width() != 600 {
+		t.Fatalf("%d", img.Width())
+	}
 
-    t.Fatalf("%d", img.Width())
-  }
-
-  if img.Height() != 399 {
-    t.Fatalf("%d", img.Height())
-  }
+	if img.Height() != 399 {
+		t.Fatalf("%d", img.Height())
+	}
 }
 
 func TestResizeSuccess(t *testing.T) {
-  img := asset("./assets/image.jpg")
-  defer img.Destroy()
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
 
-  resized, err := img.NewResized(50, 50)
-  if err != nil {
-    t.Error(err)
-  }
-  defer resized.Destroy()
+	resized, err := img.NewResized(50, 50)
+	if err != nil {
+		t.Error(err)
+	}
+	defer resized.Destroy()
 
-  assertDimension(t, resized, "50x50")
+	assertDimension(t, resized, "50x50")
 }
 
 func TestResampleSuccess(t *testing.T) {
-  img := asset("./assets/image.jpg")
-  defer img.Destroy()
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
 
-  resized, err := img.NewResampled(50, 50)
-  if err != nil {
-    t.Error(err)
-  }
-  defer resized.Destroy()
+	resized, err := img.NewResampled(50, 50)
+	if err != nil {
+		t.Error(err)
+	}
+	defer resized.Destroy()
 
-  assertDimension(t, resized, "50x50")
+	assertDimension(t, resized, "50x50")
+}
+
+func TestCrateFailure(t *testing.T) {
+	image := NewBlankJpg(-1, -1)
+	if image != nil {
+		t.Fatalf("This should have failed...")
+	}
 }
 
 func TestResampleFailure(t *testing.T) {
-  img := asset("./assets/image.jpg")
-  defer img.Destroy()
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
 
-  resized, err := img.NewResampled(0, 50)
-  if err == nil {
-    t.Fatalf("This should have failed...")
-  }
-
-  assertDimension(t, resized, "50x50")
+	_, err := img.NewResampled(-1, 50)
+	if err == nil {
+		t.Fatalf("This should have failed...")
+	}
 }
 
 // func TestSaveToSuccess(t *testing.T) {

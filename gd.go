@@ -6,7 +6,13 @@ import "C"
 
 import (
 	//	"bytes"
+	// "fmt"
+	"errors"
 	"unsafe"
+)
+
+var (
+	imageError = errors.New("image is nil")
 )
 
 type gdImage struct {
@@ -14,15 +20,15 @@ type gdImage struct {
 }
 
 func img(img *C.gdImage) *gdImage {
+	if img == nil {
+		return nil
+	}
+
 	image := &gdImage{img}
-	if image.invalid() {
+	if isInvalid(image) {
 		return nil
 	}
 	return image
-}
-
-func assertGd(img *C.gdImage) bool {
-	return (*img).pixels != nil	
 }
 
 func gdCreate(sx, sy int) *gdImage {
@@ -47,24 +53,37 @@ func (p *gdImage) gdDestroy() {
 	}
 }
 
-func (p *gdImage) invalid() bool {
-	return p == nil || (*p.img).pixels == nil
+func isInvalid(p *gdImage) bool {
+	return p == nil
 }
 
 func (p *gdImage) width() int {
+	if p == nil {
+		panic(imageError)
+	}
 	return int((*p.img).sx)
 }
 
 func (p *gdImage) height() int {
+	if p == nil {
+		panic(imageError)
+	}
 	return int((*p.img).sy)
 }
 
 func (p *gdImage) gdCopyResampled(dst *gdImage, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) {
+	if p == nil || p.img == nil {
+		panic(imageError)
+	}
+
 	C.gdImageCopyResampled(dst.img, p.img, C.int(dstX), C.int(dstY), C.int(srcX), C.int(srcY),
 		C.int(dstW), C.int(dstH), C.int(srcW), C.int(srcH))
 }
 
 func (p *gdImage) gdCopyResized(dst *gdImage, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) {
+	if p == nil {
+		panic(imageError)
+	}
 	C.gdImageCopyResized(dst.img, p.img, C.int(dstX), C.int(dstY), C.int(srcX), C.int(srcY),
 		C.int(dstW), C.int(dstH), C.int(srcW), C.int(srcH))
 }
