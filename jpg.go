@@ -10,10 +10,6 @@ var (
 	BlobEmpty = errors.New("blob was empty")
 )
 
-var (
-	
-)
-
 type Jpg struct {
 	gd *gdImage
 }
