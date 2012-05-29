@@ -17,9 +17,15 @@ type Jpg struct {
 
 func DecodeJpg(reader io.Reader) Image {
 	var image Jpg
-	if _, err := readFromJpg(reader); err != nil {
+
+	gd, err := readFromJpg(reader);
+
+	if err == nil {
 		return nil
 	}
+
+	image.gd = gd
+
 	return &image
 }
 
