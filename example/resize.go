@@ -16,7 +16,7 @@ func main() {
     return
   }
 
-  jpg := mogrify.NewJpg(file)
+  jpg := mogrify.DecodeJpg(file)
   
   if jpg == nil {
     fmt.Println("could not load image")

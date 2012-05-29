@@ -3,6 +3,7 @@ package mogrify
 import (
 	"fmt"
   "errors"
+  "io"
 )
 
 var (
@@ -14,8 +15,17 @@ var (
 type Image interface {
 	Width() int
 	Height() int
+  Destroy()
+
+  NewResampled(width, height int) (*GdImage, error)
+  NewResized(width, height int) (*GdImage, error)
+
+  Encode(w io.Writer) (int64, error)
+
+  image() *gdImage
 }
 
 func Dimensions(img Image) string {
 	return fmt.Sprintf("%dx%d", img.Width(), img.Height())
 }
+

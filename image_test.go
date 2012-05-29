@@ -11,11 +11,11 @@ func assertDimension(t *testing.T, img Image, expected string) {
 	}
 }
 
-func asset(asset string) *Jpg {
+func asset(asset string) Image {
 	file, _ := os.Open("./assets/image.jpg")
 	defer file.Close()
 
-	image := NewJpg(file)
+	image := DecodeJpg(file)
 
 	if image == nil {
 		panic("Image didnt load")
@@ -71,7 +71,7 @@ func TestResampleSuccess(t *testing.T) {
 }
 
 func TestCrateFailure(t *testing.T) {
-	image := NewBlankJpg(-1, -1)
+	image := NewImage(-1, -1)
 	if image != nil {
 		t.Fatalf("This should have failed...")
 	}
@@ -95,7 +95,10 @@ func TestSave(t *testing.T) {
 
 	dest, _ := os.Create("/tmp/dest.jpg")
 	defer dest.Close()
-	resized.WriteTo(dest)
+
+
+
+	resized.Encode(dest)
 
 }
 
