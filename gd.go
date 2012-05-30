@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	imageError = errors.New("[GD] image is nil")
+	imageError  = errors.New("[GD] image is nil")
 	createError = errors.New("[GD] cannot create new image")
-	writeError = errors.New("[GD] image cannot be written")
+	writeError  = errors.New("[GD] image cannot be written")
 )
 
 type gdImage struct {
@@ -73,7 +73,7 @@ func (p *gdImage) height() int {
 	return int((*p.img).sy)
 }
 
-func (p *gdImage) gdCopyResampled(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) (*gdImage) {
+func (p *gdImage) gdCopyResampled(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) *gdImage {
 	if p == nil || p.img == nil {
 		panic(imageError)
 	}
@@ -95,7 +95,7 @@ func (p *gdImage) gdCopyResampled(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH
 	return dst
 }
 
-func (p *gdImage) gdCopyResized(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) (*gdImage) {
+func (p *gdImage) gdCopyResized(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) *gdImage {
 	if p == nil || p.img == nil {
 		panic(imageError)
 	}
@@ -121,15 +121,15 @@ func (p *gdImage) gdImagePng() ([]byte, error) {
 	if p == nil {
 		panic(imageError)
 	}
-		
+
 	var size C.int
-	
+
 	data := C.gdImagePngPtr(p.img, &size)
 	if data == nil || int(size) == 0 {
 		return []byte{}, writeError
 	}
-	
-	defer C.gdFree(unsafe.Pointer(data))	
+
+	defer C.gdFree(unsafe.Pointer(data))
 
 	return C.GoBytes(data, size), nil
 }
@@ -146,8 +146,8 @@ func (p *gdImage) gdImageJpeg() ([]byte, error) {
 	if data == nil || int(size) == 0 {
 		return []byte{}, writeError
 	}
-	
-	defer C.gdFree(unsafe.Pointer(data))	
+
+	defer C.gdFree(unsafe.Pointer(data))
 
 	return C.GoBytes(data, size), nil
 }

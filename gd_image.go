@@ -1,8 +1,6 @@
 package mogrify
 
-import (
-  "io"
-)
+import ()
 
 type GdImage struct {
   gd *gdImage
@@ -50,8 +48,4 @@ func (img *GdImage) image() *gdImage {
 
 func (img *GdImage) Destroy() {
   img.image().gdDestroy()
-}
-
-func (img *GdImage) Encode(w io.Writer) (int64, error) {
-  panic("No idea how")
 }

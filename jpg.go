@@ -10,17 +10,17 @@ var (
 	BlobEmpty = errors.New("blob was empty")
 )
 
-
 type Jpg struct {
+	// Import GdImage and all it's methods
 	GdImage
 }
 
 func DecodeJpg(reader io.Reader) Image {
 	var image Jpg
 
-	gd, err := readFromJpg(reader);
+	gd, err := readFromJpg(reader)
 
-	if err == nil {
+	if err != nil {
 		return nil
 	}
 
@@ -47,22 +47,13 @@ func readFromJpg(reader io.Reader) (gd *gdImage, err error) {
 }
 
 func writeAsJpg(img Image, writer io.Writer) (n int64, err error) {
-	slice, err := img.image().gdImageJpeg() 
+	slice, err := img.image().gdImageJpeg()
 	if err != nil {
 		return 0, err
 	}
 
-	_, err = writer.Write(slice) 
+	written, err := writer.Write(slice)
+
 	// todo: return actual len of write
-	return 0, err
-}
-
-func (img *Jpg) Encode(w io.Writer) (int64, error) {
-
-	slice, err := img.image().gdImageJpeg() 
-	if err != nil {
-		return 0, err
-	}
-
-	return bytes.NewBuffer(slice).WriteTo(w)	
+	return (int64)(written), err
 }

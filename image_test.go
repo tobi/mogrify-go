@@ -96,9 +96,7 @@ func TestSave(t *testing.T) {
 	dest, _ := os.Create("/tmp/dest.jpg")
 	defer dest.Close()
 
-
-
-	resized.Encode(dest)
+	EncodeJpg(dest, resized)
 
 }
 
