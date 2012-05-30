@@ -134,6 +134,23 @@ func (p *gdImage) gdImagePng() ([]byte, error) {
 	return C.GoBytes(data, size), nil
 }
 
+func (p *gdImage) gdImageGif() ([]byte, error) {
+	if p == nil {
+		panic(imageError)
+	}
+
+	var size C.int
+
+	data := C.gdImageGifPtr(p.img, &size)
+	if data == nil || int(size) == 0 {
+		return []byte{}, writeError
+	}
+
+	defer C.gdFree(unsafe.Pointer(data))
+
+	return C.GoBytes(data, size), nil
+}
+
 func (p *gdImage) gdImageJpeg() ([]byte, error) {
 	if p == nil {
 		panic(imageError)
