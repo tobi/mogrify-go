@@ -16,7 +16,7 @@ func asset(asset string) Image {
 	file, _ := os.Open("./assets/image.jpg")
 	defer file.Close()
 
-	image := DecodeJpg(file)
+	image := DecodeJpeg(file)
 
 	if image == nil {
 		panic("Image didnt load")
@@ -106,15 +106,44 @@ func TestDecodeEncode(t *testing.T) {
 
 	var buffer bytes.Buffer
 
-	_, err = EncodeJpg(&buffer, resized)
+	_, err = EncodeJpeg(&buffer, resized)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	roundtrip := DecodeJpg(&buffer)
+	roundtrip := DecodeJpeg(&buffer)
 
 	assertDimension(t, roundtrip, "100x100")
+}
 
+func TestDecodePng(t *testing.T) {
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
+
+	dest, _ := os.Create("/tmp/dest.png")
+	defer dest.Close()
+
+	_, err := EncodePng(dest, img)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}
+
+func TestDecodeGif(t *testing.T) {
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
+
+	dest, _ := os.Create("/tmp/dest.gif")
+	defer dest.Close()
+
+	_, err := EncodeGif(dest, img)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
 }
