@@ -15,8 +15,8 @@ type Image interface {
 
   Destroy()
 
-  NewResampled(width, height int) (*GdImage, error)
-  NewResized(width, height int) (*GdImage, error)
+  NewResampled(bounds Bounds) (*GdImage, error)
+  NewResized(bounds Bounds) (*GdImage, error)
 
   image() *gdImage
 }

@@ -16,8 +16,8 @@ func NewImage(width, height int) Image {
   return &image
 }
 
-func (img *GdImage) NewResized(width, height int) (*GdImage, error) {
-  resized := img.image().gdCopyResized(0, 0, 0, 0, width, height, img.image().width(), img.image().height())
+func (img *GdImage) NewResized(bounds Bounds) (*GdImage, error) {
+  resized := img.image().gdCopyResized(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
   if resized == nil {
     return nil, resampleError
   }
@@ -25,8 +25,8 @@ func (img *GdImage) NewResized(width, height int) (*GdImage, error) {
   return &GdImage{resized}, nil
 }
 
-func (img *GdImage) NewResampled(width, height int) (*GdImage, error) {
-  resized := img.image().gdCopyResampled(0, 0, 0, 0, width, height, img.image().width(), img.image().height())
+func (img *GdImage) NewResampled(bounds Bounds) (*GdImage, error) {
+  resized := img.image().gdCopyResampled(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
   if resized == nil {
     return nil, resampleError
   }

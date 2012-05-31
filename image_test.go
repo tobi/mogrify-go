@@ -49,7 +49,7 @@ func TestResizeSuccess(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	resized, err := img.NewResized(50, 50)
+	resized, err := img.NewResized( Bounds{50, 50} )
 	if err != nil {
 		t.Error(err)
 	}
@@ -62,7 +62,7 @@ func TestResampleSuccess(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	resized, err := img.NewResampled(50, 50)
+	resized, err := img.NewResampled( Bounds{50, 50} )
 	if err != nil {
 		t.Error(err)
 	}
@@ -82,7 +82,7 @@ func TestResampleFailure(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	_, err := img.NewResampled(-1, 50)
+	_, err := img.NewResampled( Bounds{-1, 50} )
 	if err == nil {
 		t.Fatalf("This should have failed...")
 	}
@@ -92,7 +92,7 @@ func TestDecodeEncode(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	resized, err := img.NewResampled(100, 100)
+	resized, err := img.NewResampled( Bounds{100, 100} )
 
 	if err != nil {
 		t.Error(err)
