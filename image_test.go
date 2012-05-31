@@ -36,12 +36,12 @@ func TestHeightWidth(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	if img.Width() != 600 {
-		t.Fatalf("%d", img.Width())
+	if img.Bounds().Width != 600 {
+		t.Fatalf("%d", img.Bounds().Width)
 	}
 
-	if img.Height() != 399 {
-		t.Fatalf("%d", img.Height())
+	if img.Bounds().Height != 399 {
+		t.Fatalf("%d", img.Bounds().Height)
 	}
 }
 

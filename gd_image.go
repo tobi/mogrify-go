@@ -34,8 +34,8 @@ func (img *GdImage) NewResampled(width, height int) (*GdImage, error) {
   return &GdImage{resized}, nil
 }
 
-func (img *GdImage) Width() int {
-  return img.image().width()
+func (img *GdImage) Bounds() Bounds {
+  return Bounds{img.image().width(), img.image().height()}
 }
 
 func (img *GdImage) Height() int {
