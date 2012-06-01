@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	imageError  = errors.New("[GD] image is nil")
-	createError = errors.New("[GD] cannot create new image")
-	writeError  = errors.New("[GD] image cannot be written")
+	imageError	= errors.New("[GD] image is nil")
+	createError	= errors.New("[GD] cannot create new image")
+	writeError	= errors.New("[GD] image cannot be written")
 )
 
 type gdImage struct {
@@ -33,8 +33,31 @@ func img(img *C.gdImage) *gdImage {
 	return image
 }
 
+func cbool(b bool) int {
+	if b == true {
+		return 1
+	}
+	return 0
+}
+
 func gdCreate(sx, sy int) *gdImage {
-	return img(C.gdImageCreateTrueColor(C.int(sx), C.int(sy)))
+	img := img(C.gdImageCreateTrueColor(C.int(sx), C.int(sy)))
+
+	if img == nil {
+		return nil
+	}
+
+	img.gdAlphaBlending(false)
+	img.gdSaveAlpha(true)
+	return img
+}
+
+func (p *gdImage) gdAlphaBlending(b bool) {
+	C.gdImageAlphaBlending(p.img, C.int(cbool(b)))
+}
+
+func (p *gdImage) gdSaveAlpha(b bool) {
+	C.gdImageSaveAlpha(p.img, C.int(cbool(b)))
 }
 
 func gdCreateFromJpeg(buffer []byte) *gdImage {
@@ -46,7 +69,7 @@ func gdCreateFromGif(buffer []byte) *gdImage {
 }
 
 func gdCreateFromPng(buffer []byte) *gdImage {
-	return img(C.gdImageCreateFromGifPtr(C.int(len(buffer)), unsafe.Pointer(&buffer[0])))
+	return img(C.gdImageCreateFromPngPtr(C.int(len(buffer)), unsafe.Pointer(&buffer[0])))
 }
 
 func (p *gdImage) gdDestroy() {
