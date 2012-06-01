@@ -3,49 +3,49 @@ package mogrify
 import ()
 
 type GdImage struct {
-  gd *gdImage
+	gd *gdImage
 }
 
 func NewImage(width, height int) Image {
-  var image GdImage
-  image.gd = gdCreate(width, height)
-  if image.gd == nil {
-    return nil
-  }
+	var image GdImage
+	image.gd = gdCreate(width, height)
+	if image.gd == nil {
+		return nil
+	}
 
-  return &image
+	return &image
 }
 
 func (img *GdImage) NewResized(bounds Bounds) (*GdImage, error) {
-  resized := img.image().gdCopyResized(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
-  if resized == nil {
-    return nil, resampleError
-  }
+	resized := img.image().gdCopyResized(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
+	if resized == nil {
+		return nil, resampleError
+	}
 
-  return &GdImage{resized}, nil
+	return &GdImage{resized}, nil
 }
 
 func (img *GdImage) NewResampled(bounds Bounds) (*GdImage, error) {
-  resized := img.image().gdCopyResampled(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
-  if resized == nil {
-    return nil, resampleError
-  }
+	resized := img.image().gdCopyResampled(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
+	if resized == nil {
+		return nil, resampleError
+	}
 
-  return &GdImage{resized}, nil
+	return &GdImage{resized}, nil
 }
 
 func (img *GdImage) Bounds() Bounds {
-  return Bounds{img.image().width(), img.image().height()}
+	return Bounds{img.image().width(), img.image().height()}
 }
 
 func (img *GdImage) Height() int {
-  return img.image().height()
+	return img.image().height()
 }
 
 func (img *GdImage) image() *gdImage {
-  return img.gd
+	return img.gd
 }
 
 func (img *GdImage) Destroy() {
-  img.image().gdDestroy()
+	img.image().gdDestroy()
 }

@@ -1,27 +1,26 @@
 package mogrify
 
 import (
-  "errors"
+	"errors"
 )
 
 var (
-  resampleError = errors.New("Resampling failed")
-  resizeError   = errors.New("Resampling failed")
-  loadError     = errors.New("Image cannot be loaded")
+	resampleError	= errors.New("Resampling failed")
+	resizeError	= errors.New("Resampling failed")
+	loadError	= errors.New("Image cannot be loaded")
 )
 
-type Image interface {	
-  Bounds() Bounds
+type Image interface {
+	Bounds() Bounds
 
-  Destroy()
+	Destroy()
 
-  NewResampled(bounds Bounds) (*GdImage, error)
-  NewResized(bounds Bounds) (*GdImage, error)
+	NewResampled(bounds Bounds) (*GdImage, error)
+	NewResized(bounds Bounds) (*GdImage, error)
 
-  image() *gdImage
+	image() *gdImage
 }
 
-
 func Dimensions(img Image) string {
-  return img.Bounds().String()  
+	return img.Bounds().String()
 }
