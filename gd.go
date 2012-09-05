@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	imageError	= errors.New("[GD] image is nil")
-	createError	= errors.New("[GD] cannot create new image")
-	writeError	= errors.New("[GD] image cannot be written")
+	imageError  = errors.New("[GD] image is nil")
+	createError = errors.New("[GD] cannot create new image")
+	writeError  = errors.New("[GD] image cannot be written")
 )
 
 type gdImage struct {
@@ -79,7 +79,7 @@ func (p *gdImage) gdDestroy() {
 }
 
 func isInvalid(p *gdImage) bool {
-	return p == nil || p.img.pixels != nil
+	return p == nil || p.img == nil
 }
 
 func (p *gdImage) width() int {
