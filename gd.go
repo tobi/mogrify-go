@@ -8,6 +8,7 @@ import (
 	//	"bytes"
 	//	"fmt"
 	"errors"
+	//"log"
 	"unsafe"
 )
 
@@ -47,8 +48,9 @@ func gdCreate(sx, sy int) *gdImage {
 		return nil
 	}
 
-	img.gdAlphaBlending(false)
-	img.gdSaveAlpha(true)
+	C.gdImageAlphaBlending(img.img, C.int(cbool(false)))
+	C.gdImageSaveAlpha(img.img, C.int(cbool(true)))
+
 	return img
 }
 
@@ -89,6 +91,13 @@ func (p *gdImage) width() int {
 	return int((*p.img).sx)
 }
 
+func (p *gdImage) transparent() bool {
+	if p == nil {
+		panic(imageError)
+	}
+	return int((*p.img).transparent) == 1
+}
+
 func (p *gdImage) height() int {
 	if p == nil {
 		panic(imageError)
@@ -97,6 +106,7 @@ func (p *gdImage) height() int {
 }
 
 func (p *gdImage) gdCopyResampled(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) *gdImage {
+
 	if p == nil || p.img == nil {
 		panic(imageError)
 	}
@@ -128,6 +138,10 @@ func (p *gdImage) gdCopyResized(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH i
 	if dst == nil {
 		return nil
 	}
+
+	transparency := C.gdImageColorAllocateAlpha(dst.img, 255, 255, 255, 127)
+	C.gdImageFilledRectangle(dst.img, C.int(dstX), C.int(dstY), C.int(dstW), C.int(dstH), transparency)
+	C.gdImageColorTransparent(dst.img, transparency)
 
 	C.gdImageCopyResized(dst.img, p.img, C.int(dstX), C.int(dstY), C.int(srcX), C.int(srcY),
 		C.int(dstW), C.int(dstH), C.int(srcW), C.int(srcH))
@@ -182,7 +196,7 @@ func (p *gdImage) gdImageJpeg() ([]byte, error) {
 	var size C.int
 
 	// use -1 as quality, this will mean to use standard Jpeg quality
-	data := C.gdImageJpegPtr(p.img, &size, -1)
+	data := C.gdImageJpegPtr(p.img, &size, 92)
 	if data == nil || int(size) == 0 {
 		return []byte{}, writeError
 	}
