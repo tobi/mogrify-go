@@ -9,6 +9,12 @@ type Bounds struct {
   Width, Height int
 }
 
+func BoundsFromString(bounds string) Bounds {
+  var x,y int
+  fmt.Sscanf(bounds, "%dx%d", &x, &y)
+  return Bounds{x, y}
+}
+
 func (b Bounds) String() string {
   return fmt.Sprintf("%dx%d", b.Width, b.Height)
 }

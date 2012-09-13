@@ -63,3 +63,10 @@ func TestGrow(t *testing.T) {
   if bounds.Width != 100000 { t.Errorf("Width is wrong: %d", bounds.Width) }
   if bounds.Height != 50000 { t.Errorf("Height is wrong: %d", bounds.Height) }
 }
+
+func TestFromString(t *testing.T) {
+  bounds := BoundsFromString("100x50")
+  if bounds.Width != 100 { t.Errorf("Width is wrong: %d", bounds.Width) }
+  if bounds.Height != 50 { t.Errorf("Height is wrong: %d", bounds.Height) }
+}
+
