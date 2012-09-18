@@ -58,6 +58,19 @@ func TestResizeSuccess(t *testing.T) {
 	assertDimension(t, resized, "50x50")
 }
 
+func TestCropSuccess(t *testing.T) {
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
+
+  cropped, err := img.NewCropped(0,0,Bounds{50, 50})
+	if err != nil {
+		t.Error(err)
+	}
+	defer cropped.Destroy()
+
+	assertDimension(t, cropped, "50x50")
+}
+
 func TestGifResizeSuccess(t *testing.T) {
 	img := asset("./assets/image.gif")
 	defer img.Destroy()
@@ -96,6 +109,16 @@ func TestResampleFailure(t *testing.T) {
 	defer img.Destroy()
 
 	_, err := img.NewResampled(Bounds{-1, 50})
+	if err == nil {
+		t.Fatalf("This should have failed...")
+	}
+}
+
+func TestCropFailure(t *testing.T) {
+	img := asset("./assets/image.jpg")
+	defer img.Destroy()
+
+	_, err := img.NewCropped(0,0,Bounds{-1, 50})
 	if err == nil {
 		t.Fatalf("This should have failed...")
 	}
