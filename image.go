@@ -17,6 +17,7 @@ type Image interface {
 
 	NewResampled(bounds Bounds) (*GdImage, error)
 	NewResized(bounds Bounds) (*GdImage, error)
+  NewCropped(x int, y int, bounds Bounds) (*GdImage, error)
 
 	image() *gdImage
 }
