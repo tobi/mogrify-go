@@ -3,6 +3,8 @@ package mogrify
 import (
   "math"
   "fmt"
+  "regexp"
+  "strconv"
 )
 
 type Bounds struct {
@@ -11,8 +13,18 @@ type Bounds struct {
 
 func BoundsFromString(bounds string) Bounds {
   var x,y int
-  fmt.Sscanf(bounds, "%dx%d", &x, &y)
-  return Bounds{x, y}
+
+  finder,err := regexp.Compile("([0-9]*)x([0-9]*)")
+  if err != nil {
+    return Bounds{0,0}
+  }
+
+  dimensions := finder.FindStringSubmatch(bounds)
+
+  x,_ = strconv.Atoi(dimensions[1])
+  y,_ = strconv.Atoi(dimensions[2])
+
+  return Bounds{ x, y}
 }
 
 func (b Bounds) String() string {

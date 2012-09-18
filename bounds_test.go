@@ -68,5 +68,14 @@ func TestFromString(t *testing.T) {
   bounds := BoundsFromString("100x50")
   if bounds.Width != 100 { t.Errorf("Width is wrong: %d", bounds.Width) }
   if bounds.Height != 50 { t.Errorf("Height is wrong: %d", bounds.Height) }
+
+  bounds = BoundsFromString("x50")
+  if bounds.Width != 0 { t.Errorf("Width is wrong : %d", bounds.Width) }
+  if bounds.Height != 50 { t.Errorf("Height is wrong: %d", bounds.Height) }
+
+  bounds = BoundsFromString("50x")
+  if bounds.Width != 50 { t.Errorf("Width is wrong : %d", bounds.Width) }
+  if bounds.Height != 0 { t.Errorf("Height is wrong: %d", bounds.Height) }
+
 }
 
