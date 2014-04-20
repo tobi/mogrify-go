@@ -2,6 +2,7 @@ package mogrify
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 )
 
@@ -10,15 +11,15 @@ type Jpeg struct {
 	GdImage
 }
 
-func DecodeJpeg(reader io.Reader) Image {
+func DecodeJpeg(reader io.Reader) (Image, error) {
 	var image Jpeg
 
 	image.gd = gdCreateFromJpeg(drain(reader))
 	if image.gd == nil {
-		return nil
+		return nil, fmt.Errorf("couldn't create JPEG decoder")
 	}
 
-	return &image
+	return &image, nil
 }
 
 func EncodeJpeg(w io.Writer, img Image) (int64, error) {

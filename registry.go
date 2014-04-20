@@ -1,17 +1,16 @@
 package mogrify
 
 import (
-	"errors"
+	"fmt"
 	"io"
 )
 
-type decodeFunc (func(io.Reader) Image)
-type encodeFunc (func(io.Writer, Image) (int64, error))
+type decodeFunc func(io.Reader) (Image, error)
+type encodeFunc func(io.Writer, Image) (int64, error)
 
 var (
-	noEncoder                       = errors.New("no encoder for mime type")
-	encoders  map[string]encodeFunc = make(map[string]encodeFunc)
-	decoders  map[string]decodeFunc = make(map[string]decodeFunc)
+	encoders = make(map[string]encodeFunc)
+	decoders = make(map[string]decodeFunc)
 )
 
 func registerFormat(mime string, e encodeFunc, d decodeFunc) {
@@ -26,22 +25,22 @@ func init() {
 	registerFormat("image/gif", EncodeGif, DecodeGif)
 }
 
+// Encode an image onto a writer using an encoder appropriate for the
+// given mimetype, if one exists.
 func Encode(mime string, w io.Writer, i Image) (int64, error) {
-	encoder := encoders[mime]
-
-	if encoder == nil {
-		return 0, noEncoder
+	encoder, ok := encoders[mime]
+	if !ok {
+		return 0, fmt.Errorf("no encoder for mime type '%s'", mime)
 	}
-
 	return encoder(w, i)
 }
 
-func Decode(mime string, r io.Reader) Image {
-	decoder := decoders[mime]
-
-	if decoder == nil {
-		return nil
+// Decode an image from the reader using a decoder appropriate for the
+// given mimetype, if one exists.
+func Decode(mime string, r io.Reader) (Image, error) {
+	decoder, ok := decoders[mime]
+	if !ok {
+		return nil, fmt.Errorf("no decoder for mime type '%s'", mime)
 	}
-
 	return decoder(r)
 }

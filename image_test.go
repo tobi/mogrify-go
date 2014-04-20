@@ -16,10 +16,9 @@ func asset(asset string) Image {
 	file, _ := os.Open("./assets/image.jpg")
 	defer file.Close()
 
-	image := DecodeJpeg(file)
-
-	if image == nil {
-		panic("Image didnt load")
+	image, err := DecodeJpeg(file)
+	if err != nil {
+		panic("Image didnt load: " + err.Error())
 	}
 
 	return image
@@ -62,7 +61,7 @@ func TestCropSuccess(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-  cropped, err := img.NewCropped(0,0,Bounds{50, 50})
+	cropped, err := img.NewCropped(0, 0, Bounds{50, 50})
 	if err != nil {
 		t.Error(err)
 	}
@@ -118,7 +117,7 @@ func TestCropFailure(t *testing.T) {
 	img := asset("./assets/image.jpg")
 	defer img.Destroy()
 
-	_, err := img.NewCropped(0,0,Bounds{-1, 50})
+	_, err := img.NewCropped(0, 0, Bounds{-1, 50})
 	if err == nil {
 		t.Fatalf("This should have failed...")
 	}
@@ -149,7 +148,10 @@ func TestDecodeEncode(t *testing.T) {
 		return
 	}
 
-	roundtrip := DecodeJpeg(&buffer)
+	roundtrip, err := DecodeJpeg(&buffer)
+	if err != nil {
+		panic("Couldn't load image: " + err.Error())
+	}
 
 	assertDimension(t, roundtrip, "100x100")
 }

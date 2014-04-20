@@ -2,6 +2,7 @@ package mogrify
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 )
 
@@ -10,15 +11,15 @@ type Gif struct {
 	GdImage
 }
 
-func DecodeGif(reader io.Reader) Image {
+func DecodeGif(reader io.Reader) (Image, error) {
 	var image Gif
 
 	image.gd = gdCreateFromGif(drain(reader))
 	if image.gd == nil {
-		return nil
+		return nil, fmt.Errorf("couldn't create GIF decoder")
 	}
 
-	return &image
+	return &image, nil
 }
 
 func EncodeGif(w io.Writer, img Image) (int64, error) {

@@ -7,24 +7,38 @@ import (
 	"strconv"
 )
 
+var boundFinder = regexp.MustCompile("([0-9]*)x([0-9]*)")
+
+// Bounds of an image.
 type Bounds struct {
 	Width, Height int
 }
 
-func BoundsFromString(bounds string) Bounds {
-	var x, y int
+// BoundsFromString creates a Bounds from strings of the form:
+//		"100x150"		->	Width 100, Height 150
+//		"x150"			->	Width   0, Height 150
+//		"100x"			->	Width 100, Height   0
+//		"x"					->	Width   0, Height   0
+//		"no match" 	-> nil, error
+func BoundsFromString(bounds string) (*Bounds, error) {
 
-	finder, err := regexp.Compile("([0-9]*)x([0-9]*)")
-	if err != nil {
-		return Bounds{0, 0}
+	dimensions := boundFinder.FindStringSubmatch(bounds)
+	if len(dimensions) != 3 {
+		return nil, fmt.Errorf("malformed bound string")
 	}
 
-	dimensions := finder.FindStringSubmatch(bounds)
+	atoiOrZero := func(str string) int {
+		if str == "" {
+			return 0
+		}
+		val, _ := strconv.Atoi(str)
+		return val
+	}
 
-	x, _ = strconv.Atoi(dimensions[1])
-	y, _ = strconv.Atoi(dimensions[2])
-
-	return Bounds{x, y}
+	return &Bounds{
+		Width:  atoiOrZero(dimensions[1]),
+		Height: atoiOrZero(dimensions[2]),
+	}, nil
 }
 
 func (b Bounds) String() string {

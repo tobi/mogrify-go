@@ -5,10 +5,7 @@ package mogrify
 import "C"
 
 import (
-	//	"bytes"
-	//	"fmt"
 	"errors"
-	//"log"
 	"unsafe"
 )
 

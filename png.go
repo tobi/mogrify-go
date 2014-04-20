@@ -2,6 +2,7 @@ package mogrify
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 )
 
@@ -10,15 +11,15 @@ type Png struct {
 	GdImage
 }
 
-func DecodePng(reader io.Reader) Image {
+func DecodePng(reader io.Reader) (Image, error) {
 	var image Png
 
 	image.gd = gdCreateFromPng(drain(reader))
 	if image.gd == nil {
-		return nil
+		return nil, fmt.Errorf("couldn't create PNG decoder")
 	}
 
-	return &image
+	return &image, nil
 }
 
 func EncodePng(w io.Writer, img Image) (int64, error) {
