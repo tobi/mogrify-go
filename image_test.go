@@ -12,28 +12,27 @@ func assertDimension(t *testing.T, img Image, expected string) {
 	}
 }
 
-func asset(asset string) Image {
-	file, _ := os.Open("./assets/image.jpg")
+func asset(mime, asset string) Image {
+	file, _ := os.Open("./testdata/" + asset)
 	defer file.Close()
 
-	image := DecodeJpeg(file)
-
-	if image == nil {
-		panic("Image didnt load")
+	image, err := Decode(mime, file)
+	if err != nil {
+		panic("Image didnt load: " + err.Error())
 	}
 
 	return image
 }
 
 func TestOpenExisting(t *testing.T) {
-	image := asset("./assets/image.jpg")
+	image := asset("image/jpg", "image.jpg")
 	defer image.Destroy()
 
 	assertDimension(t, image, "600x399")
 }
 
 func TestHeightWidth(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
 	if img.Bounds().Width != 600 {
@@ -46,7 +45,7 @@ func TestHeightWidth(t *testing.T) {
 }
 
 func TestResizeSuccess(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
 	resized, err := img.NewResized(Bounds{50, 50})
@@ -58,8 +57,21 @@ func TestResizeSuccess(t *testing.T) {
 	assertDimension(t, resized, "50x50")
 }
 
+func TestCropSuccess(t *testing.T) {
+	img := asset("image/jpg", "image.jpg")
+	defer img.Destroy()
+
+	cropped, err := img.NewCropped(0, 0, Bounds{50, 50})
+	if err != nil {
+		t.Error(err)
+	}
+	defer cropped.Destroy()
+
+	assertDimension(t, cropped, "50x50")
+}
+
 func TestGifResizeSuccess(t *testing.T) {
-	img := asset("./assets/image.gif")
+	img := asset("image/gif", "image.gif")
 	defer img.Destroy()
 
 	resized, err := img.NewResized(Bounds{50, 50})
@@ -72,7 +84,7 @@ func TestGifResizeSuccess(t *testing.T) {
 }
 
 func TestResampleSuccess(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
 	resized, err := img.NewResampled(Bounds{50, 50})
@@ -92,7 +104,7 @@ func TestCrateFailure(t *testing.T) {
 }
 
 func TestResampleFailure(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
 	_, err := img.NewResampled(Bounds{-1, 50})
@@ -101,8 +113,18 @@ func TestResampleFailure(t *testing.T) {
 	}
 }
 
+func TestCropFailure(t *testing.T) {
+	img := asset("image/jpg", "image.jpg")
+	defer img.Destroy()
+
+	_, err := img.NewCropped(0, 0, Bounds{-1, 50})
+	if err == nil {
+		t.Fatalf("This should have failed...")
+	}
+}
+
 func TestDecodeEncode(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
 	resized, err := img.NewResampled(Bounds{100, 100})
@@ -114,30 +136,27 @@ func TestDecodeEncode(t *testing.T) {
 
 	assertDimension(t, resized, "100x100")
 
-	dest, _ := os.Create("/tmp/dest.jpg")
-	defer dest.Close()
-
-	var buffer bytes.Buffer
-
-	_, err = EncodeJpeg(&buffer, resized)
+	buf := bytes.NewBuffer(nil)
+	_, err = EncodeJpeg(buf, resized)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	roundtrip := DecodeJpeg(&buffer)
+	roundtrip, err := DecodeJpeg(buf)
+	if err != nil {
+		panic("Couldn't load image: " + err.Error())
+	}
 
 	assertDimension(t, roundtrip, "100x100")
 }
 
 func TestDecodePng(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
-	dest, _ := os.Create("/tmp/dest.png")
-	defer dest.Close()
-
+	dest := bytes.NewBuffer(nil)
 	_, err := EncodePng(dest, img)
 
 	if err != nil {
@@ -147,12 +166,10 @@ func TestDecodePng(t *testing.T) {
 }
 
 func TestDecodeGif(t *testing.T) {
-	img := asset("./assets/image.jpg")
+	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
-	dest, _ := os.Create("/tmp/dest.gif")
-	defer dest.Close()
-
+	dest := bytes.NewBuffer(nil)
 	_, err := EncodeGif(dest, img)
 
 	if err != nil {

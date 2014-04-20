@@ -5,10 +5,7 @@ package mogrify
 import "C"
 
 import (
-	//	"bytes"
-	//	"fmt"
 	"errors"
-	//"log"
 	"unsafe"
 )
 
@@ -103,6 +100,28 @@ func (p *gdImage) height() int {
 		panic(imageError)
 	}
 	return int((*p.img).sy)
+}
+
+func (p *gdImage) gdCopy(dstX, dstY, srcX, srcY, dstW, dstH int) *gdImage {
+
+	if p == nil || p.img == nil {
+		panic(imageError)
+	}
+
+	dst := gdCreate(dstW, dstH)
+
+	if dst == nil {
+		return nil
+	}
+
+	C.gdImageCopy(dst.img, p.img, C.int(dstX), C.int(dstY), C.int(srcX), C.int(srcY), C.int(dstW), C.int(dstH))
+
+	if isInvalid(dst) {
+		dst.gdDestroy()
+		return nil
+	}
+
+	return dst
 }
 
 func (p *gdImage) gdCopyResampled(dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH int) *gdImage {
