@@ -136,19 +136,15 @@ func TestDecodeEncode(t *testing.T) {
 
 	assertDimension(t, resized, "100x100")
 
-	dest, _ := os.Create("/tmp/dest.jpg")
-	defer dest.Close()
-
-	var buffer bytes.Buffer
-
-	_, err = EncodeJpeg(&buffer, resized)
+	buf := bytes.NewBuffer(nil)
+	_, err = EncodeJpeg(buf, resized)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	roundtrip, err := DecodeJpeg(&buffer)
+	roundtrip, err := DecodeJpeg(buf)
 	if err != nil {
 		panic("Couldn't load image: " + err.Error())
 	}
@@ -160,9 +156,7 @@ func TestDecodePng(t *testing.T) {
 	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
-	dest, _ := os.Create("/tmp/dest.png")
-	defer dest.Close()
-
+	dest := bytes.NewBuffer(nil)
 	_, err := EncodePng(dest, img)
 
 	if err != nil {
@@ -175,9 +169,7 @@ func TestDecodeGif(t *testing.T) {
 	img := asset("image/jpg", "image.jpg")
 	defer img.Destroy()
 
-	dest, _ := os.Create("/tmp/dest.gif")
-	defer dest.Close()
-
+	dest := bytes.NewBuffer(nil)
 	_, err := EncodeGif(dest, img)
 
 	if err != nil {
