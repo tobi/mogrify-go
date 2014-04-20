@@ -1,4 +1,4 @@
-// Package mogrify binds to GraphicMagicks to perform transformations on
+// Package mogrify binds to libgd to perform transformations on
 // images.  It supports GIF/JPEG/PNG images, which it can decode and
 // encode to. You can decode from a format and encode to another.
 //
