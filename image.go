@@ -1,3 +1,9 @@
+// Package mogrify binds to GraphicMagicks to perform transformations on
+// images.  It supports GIF/JPEG/PNG images, which it can decode and
+// encode to. You can decode from a format and encode to another.
+//
+// The current set of transformations is limited to cropping, resizing
+// and resampling.
 package mogrify
 
 import (
