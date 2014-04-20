@@ -1,17 +1,17 @@
 package mogrify
 
 import (
-	"io"
 	"errors"
+	"io"
 )
 
 type decodeFunc (func(io.Reader) Image)
 type encodeFunc (func(io.Writer, Image) (int64, error))
 
 var (
-	noEncoder				= errors.New("no encoder for mime type")
-	encoders	map[string]encodeFunc	= make(map[string]encodeFunc)
-	decoders	map[string]decodeFunc	= make(map[string]decodeFunc)
+	noEncoder                       = errors.New("no encoder for mime type")
+	encoders  map[string]encodeFunc = make(map[string]encodeFunc)
+	decoders  map[string]decodeFunc = make(map[string]decodeFunc)
 )
 
 func registerFormat(mime string, e encodeFunc, d decodeFunc) {

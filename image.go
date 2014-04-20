@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	resampleError	= errors.New("Resampling failed")
-	resizeError	= errors.New("Resampling failed")
-	loadError	= errors.New("Image cannot be loaded")
+	resampleError = errors.New("Resampling failed")
+	resizeError   = errors.New("Resampling failed")
+	loadError     = errors.New("Image cannot be loaded")
 )
 
 type Image interface {
