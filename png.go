@@ -6,11 +6,13 @@ import (
 	"io"
 )
 
+// Png image that can be transformed.
 type Png struct {
-	// Import GdImage and all it's methods
+	// Embed GdImage and all it's methods
 	GdImage
 }
 
+// DecodePng decodes a PNG image from a reader.
 func DecodePng(reader io.Reader) (Image, error) {
 	var image Png
 
@@ -22,6 +24,7 @@ func DecodePng(reader io.Reader) (Image, error) {
 	return &image, nil
 }
 
+// EncodePng encodes the image onto the writer as a PNG.
 func EncodePng(w io.Writer, img Image) (int64, error) {
 	slice, err := img.image().gdImagePng()
 	if err != nil {

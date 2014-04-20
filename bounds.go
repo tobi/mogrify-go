@@ -15,11 +15,11 @@ type Bounds struct {
 }
 
 // BoundsFromString creates a Bounds from strings of the form:
-//		"100x150"		->	Width 100, Height 150
-//		"x150"			->	Width   0, Height 150
-//		"100x"			->	Width 100, Height   0
-//		"x"					->	Width   0, Height   0
-//		"no match" 	-> nil, error
+//	"100x150"   ->	Width 100, Height 150
+//	"x150"      ->	Width 0, Height 150
+//	"100x"      ->	Width 100, Height 0
+//	"x"         ->	Width 0, Height 0
+//	"no match"  ->	error
 func BoundsFromString(bounds string) (*Bounds, error) {
 
 	dimensions := boundFinder.FindStringSubmatch(bounds)
@@ -41,10 +41,7 @@ func BoundsFromString(bounds string) (*Bounds, error) {
 	}, nil
 }
 
-func (b Bounds) String() string {
-	return fmt.Sprintf("%dx%d", b.Width, b.Height)
-}
-
+// ScaleProportionally the bounds to the smallest side.
 func (b Bounds) ScaleProportionally(targetWidth, targetHeight int) Bounds {
 	scalex := float64(targetWidth) / float64(b.Width)
 	scaley := float64(targetHeight) / float64(b.Height)
@@ -56,6 +53,8 @@ func (b Bounds) ScaleProportionally(targetWidth, targetHeight int) Bounds {
 	}
 }
 
+// ShrinkProportionally the bounds only if both sides are larger than
+// the target.
 func (b Bounds) ShrinkProportionally(targetWidth, targetHeight int) Bounds {
 	// Make sure there is work to be done
 	if b.Width < targetWidth || b.Height < targetHeight {
@@ -65,6 +64,8 @@ func (b Bounds) ShrinkProportionally(targetWidth, targetHeight int) Bounds {
 	return b.ScaleProportionally(targetWidth, targetHeight)
 }
 
+// GrowProportionally the bounds only if both sides are smaller than
+// the target.
 func (b Bounds) GrowProportionally(targetWidth, targetHeight int) Bounds {
 	// Make sure there is work to be done
 	if b.Width > targetWidth || b.Height > targetHeight {

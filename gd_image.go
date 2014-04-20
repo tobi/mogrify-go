@@ -1,11 +1,15 @@
 package mogrify
 
-import ()
+import (
+	"fmt"
+)
 
+// GdImage implements a wrapper around libgd.
 type GdImage struct {
 	gd *gdImage
 }
 
+// NewImage creates an image that can be modified.
 func NewImage(width, height int) Image {
 	var image GdImage
 	image.gd = gdCreate(width, height)
@@ -16,6 +20,8 @@ func NewImage(width, height int) Image {
 	return &image
 }
 
+// NewResized builds a copy of this image, resized to fit the new
+// bounds.
 func (img *GdImage) NewResized(bounds Bounds) (*GdImage, error) {
 	bounds, err := calculateBounds(bounds, img)
 	if err != nil {
@@ -24,12 +30,14 @@ func (img *GdImage) NewResized(bounds Bounds) (*GdImage, error) {
 
 	resized := img.image().gdCopyResized(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
 	if resized == nil {
-		return nil, resampleError
+		return nil, fmt.Errorf("cgo call to gdCopyResized failed")
 	}
 
 	return &GdImage{resized}, nil
 }
 
+// NewResampled builds a copy of this image, resampled within the new
+// bounds.
 func (img *GdImage) NewResampled(bounds Bounds) (*GdImage, error) {
 	bounds, err := calculateBounds(bounds, img)
 	if err != nil {
@@ -38,12 +46,13 @@ func (img *GdImage) NewResampled(bounds Bounds) (*GdImage, error) {
 
 	resized := img.image().gdCopyResampled(0, 0, 0, 0, bounds.Width, bounds.Height, img.image().width(), img.image().height())
 	if resized == nil {
-		return nil, resampleError
+		return nil, fmt.Errorf("cgo call to gdCopyResampled failed")
 	}
 
 	return &GdImage{resized}, nil
 }
 
+// NewCropped builds a copy of this image, cropped by the bounds.
 func (img *GdImage) NewCropped(x int, y int, bounds Bounds) (*GdImage, error) {
 	bounds, err := calculateBounds(bounds, img)
 	if err != nil {
@@ -52,31 +61,29 @@ func (img *GdImage) NewCropped(x int, y int, bounds Bounds) (*GdImage, error) {
 
 	cropped := img.image().gdCopy(0, 0, x, y, bounds.Width, bounds.Height)
 	if cropped == nil {
-		return nil, resampleError
+		return nil, fmt.Errorf("cgo call to gdCopy failed")
 	}
 
 	return &GdImage{cropped}, nil
 }
 
+// Bounds within which this image holds.
 func (img *GdImage) Bounds() Bounds {
 	return Bounds{img.image().width(), img.image().height()}
-}
-
-func (img *GdImage) Height() int {
-	return img.image().height()
 }
 
 func (img *GdImage) image() *gdImage {
 	return img.gd
 }
 
+// Destroy cleans up the resources used by this image.
 func (img *GdImage) Destroy() {
 	img.image().gdDestroy()
 }
 
 func calculateBounds(bounds Bounds, img *GdImage) (Bounds, error) {
 	if bounds == (Bounds{0, 0}) {
-		return bounds, resampleError
+		return bounds, fmt.Errorf("both sides can't be of length 0")
 	}
 
 	if bounds.Width == 0 {
